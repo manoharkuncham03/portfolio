@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom scrollbar for chat container */
+.scroll-smooth::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scroll-smooth::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+.scroll-smooth::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+.scroll-smooth::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Custom bounce animation for typing indicator */
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: scale(0);
+    opacity: 0.5;
+  }
+  40% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
