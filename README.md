@@ -57,3 +57,4 @@ SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
 - API keys and personal information are never exposed to the client
 - Database credentials are properly secured
 - `.env` files are excluded from version control
+"# probable-invention" 
