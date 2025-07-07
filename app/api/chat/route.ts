@@ -1,6 +1,16 @@
-import OpenAI from "openai"
-import { createClient } from "@supabase/supabase-js"
+// app/api/chat/route.ts
 
+import OpenAI from "openai";
+import { createClient } from "@supabase/supabase-js";
+
+// Debug: Show loaded env variables (remove or mask in production)
+console.log("OpenRouter API Key:", process.env.OPENROUTER_API_KEY ? "Loaded" : "Missing");
+console.log("OpenRouter Model:", process.env.OPENROUTER_MODEL);
+console.log("OpenRouter Base URL:", process.env.OPENROUTER_BASE_URL);
+console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+console.log("Supabase Service Role Key:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "Loaded" : "Missing");
+
+// OpenRouter configuration
 const openai = new OpenAI({
   baseURL: process.env.OPENROUTER_BASE_URL || "https://openrouter.ai/api/v1",
   apiKey: process.env.OPENROUTER_API_KEY!,
@@ -8,13 +18,17 @@ const openai = new OpenAI({
     "HTTP-Referer": process.env.NEXT_PUBLIC_SITE_URL || "https://localhost:3000",
     "X-Title": process.env.NEXT_PUBLIC_SITE_NAME || "Portfolio Site",
   },
-})
+});
 
-const supabase = createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!)
+// Supabase configuration
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!
+);
 
-export const maxDuration = 30
+export const maxDuration = 30;
 
-// Manohar's comprehensive information from environment variables
+// Portfolio information (from environment or fallback)
 const MANOHAR_INFO = {
   personal: {
     name: process.env.PERSONAL_NAME || "Kuncham Manohar Kumar",
@@ -39,7 +53,7 @@ const MANOHAR_INFO = {
       position: "Frontend Developer Intern",
       duration: "July 2024 – March 2025",
       responsibilities: [
-        "Engineered a production-ready frontend application using React and TypeScript, prioritizing a responsive and accessible user experience across diverse devices and WCAG 2.1 guidelines for accessibility compliance",
+        "Engineered a production-ready frontend application using React and TypeScript, prioritizing a responsive and accessible user experience across diverse devices and WCAG 2.1 guidelines for accessibility compliance.",
         "Integrated RESTful APIs developed with Python and FastAPI, optimizing data fetching by implementing client-side caching strategies and efficient API call patterns, resulting in a significant reduction in data load times and a smoother user experience.",
         "Optimized frontend performance for a robust and efficient user experience by implementing techniques such as lazy loading components, memoization to prevent unnecessary re-renders, and conducting performance audits with Lighthouse.",
       ],
@@ -77,14 +91,13 @@ const MANOHAR_INFO = {
     duration: "Nov 2021 – Aug 2025",
     location: "Hyderabad, Telangana",
   },
-}
+};
 
-// Simple keyword-based search since we're not using embeddings
+// Keyword-based search
 function searchRelevantContent(query: string) {
-  const lowerQuery = query.toLowerCase()
-  const relevantSections = []
+  const lowerQuery = query.toLowerCase();
+  const relevantSections = [];
 
-  // Check for personal info keywords
   if (
     lowerQuery.includes("contact") ||
     lowerQuery.includes("email") ||
@@ -95,10 +108,9 @@ function searchRelevantContent(query: string) {
       type: "personal",
       content: `Name: ${MANOHAR_INFO.personal.name}, Email: ${MANOHAR_INFO.personal.email}, Phone: ${MANOHAR_INFO.personal.phone}, LinkedIn: ${MANOHAR_INFO.personal.linkedin}, GitHub: ${MANOHAR_INFO.personal.github}`,
       relevance: 0.9,
-    })
+    });
   }
 
-  // Check for experience keywords
   if (
     lowerQuery.includes("experience") ||
     lowerQuery.includes("work") ||
@@ -111,11 +123,10 @@ function searchRelevantContent(query: string) {
         type: "experience",
         content: `${exp.position} at ${exp.company} (${exp.duration}): ${exp.responsibilities.join(" ")}`,
         relevance: 0.8,
-      })
-    })
+      });
+    });
   }
 
-  // Check for project keywords
   if (
     lowerQuery.includes("project") ||
     lowerQuery.includes("prepbot") ||
@@ -129,11 +140,10 @@ function searchRelevantContent(query: string) {
         type: "project",
         content: `${project.name} - Technologies: ${project.technologies.join(", ")}. ${project.description}`,
         relevance: 0.8,
-      })
-    })
+      });
+    });
   }
 
-  // Check for skills keywords
   if (
     lowerQuery.includes("skill") ||
     lowerQuery.includes("technology") ||
@@ -147,10 +157,9 @@ function searchRelevantContent(query: string) {
       type: "skills",
       content: `Programming Languages: ${MANOHAR_INFO.skills.programming.join(", ")}. Web Development: ${MANOHAR_INFO.skills.webDevelopment.join(", ")}. AI/ML: ${MANOHAR_INFO.skills.aiMl.join(", ")}. Databases: ${MANOHAR_INFO.skills.databases.join(", ")}`,
       relevance: 0.7,
-    })
+    });
   }
 
-  // Check for education keywords
   if (
     lowerQuery.includes("education") ||
     lowerQuery.includes("degree") ||
@@ -162,32 +171,31 @@ function searchRelevantContent(query: string) {
       type: "education",
       content: `${MANOHAR_INFO.education.degree} from ${MANOHAR_INFO.education.institution}, ${MANOHAR_INFO.education.location} (${MANOHAR_INFO.education.duration})`,
       relevance: 0.7,
-    })
+    });
   }
 
-  // If no specific matches, return general info
   if (relevantSections.length === 0) {
     relevantSections.push({
       type: "general",
       content: `I'm ${MANOHAR_INFO.personal.name}, an AI Developer and Frontend Developer with experience at Consuy. I've worked on projects like PrepBot, Code Pulse, and Smart Video Surveillance System. I'm skilled in Python, JavaScript, React, and AI/ML technologies.`,
       relevance: 0.5,
-    })
+    });
   }
 
-  return relevantSections.sort((a, b) => b.relevance - a.relevance).slice(0, 3)
+  return relevantSections.sort((a, b) => b.relevance - a.relevance).slice(0, 3);
 }
 
+// Database initialization (idempotent)
 async function initializeDatabase() {
   try {
     // Create tables if they don't exist
-    const { error: tableError } = await supabase.rpc("create_portfolio_tables")
-    if (tableError) console.log("Tables may already exist:", tableError.message)
+    const { error: tableError } = await supabase.rpc("create_portfolio_tables");
+    if (tableError) console.log("Tables may already exist:", tableError.message);
 
     // Check if data already exists
-    const { data: existingData } = await supabase.from("portfolio_content_simple").select("id").limit(1)
+    const { data: existingData } = await supabase.from("portfolio_content_simple").select("id").limit(1);
 
     if (!existingData || existingData.length === 0) {
-      // Insert Manohar's information without embeddings (using keyword-based search instead)
       const contentChunks = [
         {
           type: "personal",
@@ -219,7 +227,7 @@ async function initializeDatabase() {
           metadata: MANOHAR_INFO.education,
           keywords: "education degree college university study bachelor computer science",
         },
-      ]
+      ];
 
       for (const chunk of contentChunks) {
         await supabase.from("portfolio_content_simple").insert({
@@ -227,11 +235,11 @@ async function initializeDatabase() {
           content: chunk.content,
           metadata: chunk.metadata,
           keywords: chunk.keywords,
-        })
+        });
       }
     }
   } catch (error) {
-    console.error("Database initialization error:", error)
+    console.error("Database initialization error:", error);
   }
 }
 
@@ -242,30 +250,30 @@ async function saveChatMessage(message: string, response: string, userId?: strin
       user_message: message,
       bot_response: response,
       timestamp: new Date().toISOString(),
-    })
+    });
   } catch (error) {
-    console.error("Error saving chat message:", error)
+    console.error("Error saving chat message:", error);
   }
 }
 
 export async function POST(req: Request) {
   try {
-    const { messages } = await req.json()
+    const { messages } = await req.json();
 
     // Initialize database on first request
-    await initializeDatabase()
+    await initializeDatabase();
 
-    const lastMessage = messages[messages.length - 1]
-    const userQuery = lastMessage.content
+    const lastMessage = messages[messages.length - 1];
+    const userQuery = lastMessage.content;
 
     // Search for relevant content using keyword matching
-    const relevantContent = searchRelevantContent(userQuery)
+    const relevantContent = searchRelevantContent(userQuery);
 
     // Create context from retrieved content
     const context =
       relevantContent.length > 0
         ? `Based on Manohar Kumar's portfolio information:\n${relevantContent.map((item) => item.content).join("\n\n")}`
-        : `Here's what I know about Manohar Kumar: I'm an AI Developer and Frontend Developer with experience at Consuy.`
+        : `Here's what I know about Manohar Kumar: I'm an AI Developer and Frontend Developer with experience at Consuy.`;
 
     const systemPrompt = `You are Manohar Kumar's AI assistant. You have access to his complete portfolio information including experience, projects, skills, and education. 
 
@@ -279,9 +287,9 @@ Key guidelines:
 - Be enthusiastic about projects and achievements
 - Include relevant contact information when appropriate
 - Keep responses conversational but professional
-- Limit responses to 2-3 paragraphs maximum`
+- Limit responses to 2-3 paragraphs maximum`;
 
-    let answer: string
+    let answer: string;
 
     try {
       const completion = await openai.chat.completions.create({
@@ -292,28 +300,28 @@ Key guidelines:
         ],
         max_tokens: 500,
         temperature: 0.7,
-      })
+      });
 
-      answer = completion.choices?.[0]?.message?.content?.trim() ?? "Sorry, I'm not sure how to respond to that."
+      answer = completion.choices?.[0]?.message?.content?.trim() ?? "Sorry, I'm not sure how to respond to that.";
     } catch (apiErr) {
-      console.error("OpenRouter error:", apiErr)
+      console.error("OpenRouter error:", apiErr);
 
       // graceful degradation
-      answer = "I'm having trouble reaching my AI model right now, but here's some information about me:\n" + context
+      answer = "I'm having trouble reaching my AI model right now, but here's some information about me:\n" + context;
     }
 
     // persist chat history (do not block the response)
-    saveChatMessage(userQuery, answer).catch(console.error)
+    saveChatMessage(userQuery, answer).catch(console.error);
 
     return new Response(JSON.stringify({ content: answer }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
-    })
+    });
   } catch (error) {
-    console.error("API Error:", error)
+    console.error("API Error:", error);
     return new Response(JSON.stringify({ error: "Internal Server Error" }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
-    })
+    });
   }
 }
