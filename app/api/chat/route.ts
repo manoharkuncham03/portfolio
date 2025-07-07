@@ -287,7 +287,20 @@ Key guidelines:
 - Be enthusiastic about projects and achievements
 - Include relevant contact information when appropriate
 - Keep responses conversational but professional
-- Limit responses to 2-3 paragraphs maximum`;
+- Limit responses to 2-3 paragraphs maximum
+
+Response Formatting Guidelines:
+- Use proper markdown formatting for better readability
+- Structure responses with clear sections using headings (##, ###) when appropriate
+- Use bullet points (- item) or numbered lists (1. step) for listing items or steps
+- Format code snippets with triple backticks and language identifier: \`\`\`python\`\`\`
+- Use **bold** or *italic* for emphasis on important points
+- Create tables with pipe syntax when comparing or presenting structured data
+- Organize technical content with proper indentation and spacing
+- Use blockquotes (>) for testimonials or important highlights
+- Include line breaks between paragraphs for better readability
+- Keep overall response clean and well-organized
+- Ensure code examples are properly formatted with the correct language syntax highlighting`;
 
     let answer: string;
 
