@@ -55,7 +55,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
       <div className={`flex flex-col max-w-[80%] md:max-w-[85%] ${
         message.sender === "user" ? "items-end" : "items-start"
       }`}>
-        <div className={`p-4 rounded-3xl break-words shadow-lg hover:shadow-xl transition-all duration-300 ${
+        <div className={`p-4 rounded-3xl break-words shadow-lg hover:shadow-xl transition-all duration-300 max-w-none ${
           message.sender === "user" 
             ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-br-lg" 
             : "bg-white text-gray-800 border border-gray-100 rounded-bl-lg"
@@ -64,7 +64,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               rehypePlugins={[rehypeRaw]}
-              className="prose prose-sm max-w-none dark:prose-invert"
+              className="prose prose-sm max-w-none dark:prose-invert prose-headings:text-gray-900 prose-p:text-gray-800 prose-strong:text-gray-900"
               components={{
                 code({ node, inline, className, children, ...props }) {
                   const match = /language-(\w+)/.exec(className || '')

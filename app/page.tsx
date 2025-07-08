@@ -57,9 +57,12 @@ export default function Home() {
     setIsLoading(true)
 
     try {
+      // Increased timeout for longer responses
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        // Add timeout and better error handling
+        signal: AbortSignal.timeout(90000), // 90 seconds timeout
         body: JSON.stringify({
           messages: [
             ...messages.map((m) => ({
@@ -77,7 +80,7 @@ export default function Home() {
       if (content) addMessage(content, "bot")
     } catch (error) {
       console.error("Error:", error)
-      addMessage("Sorry, I encountered an error. Please try again.", "bot")
+      addMessage("I apologize, but I encountered an error while processing your request. This might be due to a network issue or the response taking longer than expected. Please try asking your question again, and I'll do my best to provide a complete answer.", "bot")
     } finally {
       setIsLoading(false)
     }
@@ -94,9 +97,11 @@ export default function Home() {
     setIsLoading(true)
 
     try {
+      // Increased timeout for longer responses
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: AbortSignal.timeout(90000), // 90 seconds timeout
         body: JSON.stringify({
           messages: [
             ...messages.map((m) => ({
@@ -114,7 +119,7 @@ export default function Home() {
       if (content) addMessage(content, "bot")
     } catch (error) {
       console.error("Error:", error)
-      addMessage("Sorry, I encountered an error. Please try again.", "bot")
+      addMessage("I apologize, but I encountered an error while processing your request. This might be due to a network issue or the response taking longer than expected. Please try asking your question again, and I'll do my best to provide a complete answer.", "bot")
     } finally {
       setIsLoading(false)
     }

@@ -9,6 +9,13 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  // Increase API timeout limits
+  experimental: {
+    serverComponentsExternalPackages: ['@supabase/supabase-js'],
+  },
+  // Configure for better performance with longer responses
+  poweredByHeader: false,
+  compress: true,
 }
 
 export default nextConfig

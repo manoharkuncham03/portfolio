@@ -26,7 +26,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-export const maxDuration = 30;
+export const maxDuration = 60; // Increased from 30 to 60 seconds
 
 // Portfolio information (from environment or fallback)
 const MANOHAR_INFO = {
@@ -182,7 +182,7 @@ function searchRelevantContent(query: string) {
     });
   }
 
-  return relevantSections.sort((a, b) => b.relevance - a.relevance).slice(0, 3);
+  return relevantSections.sort((a, b) => b.relevance - a.relevance).slice(0, 5); // Increased from 3 to 5
 }
 
 // Database initialization (idempotent)
@@ -275,19 +275,27 @@ export async function POST(req: Request) {
         ? `Based on Manohar Kumar's portfolio information:\n${relevantContent.map((item) => item.content).join("\n\n")}`
         : `Here's what I know about Manohar Kumar: I'm an AI Developer and Frontend Developer with experience at Consuy.`;
 
+    // Enhanced system prompt with better instructions for complete responses
     const systemPrompt = `You are Manohar Kumar's AI assistant. You have access to his complete portfolio information including experience, projects, skills, and education. 
 
 ${context}
 
-Respond as if you are Manohar Kumar himself, using first person ("I", "my", "me"). Be conversational, professional, and provide specific details from the portfolio information. If asked about something not in the portfolio, politely redirect to what you do know about Manohar's background.
+CRITICAL INSTRUCTIONS:
+- Respond as if you are Manohar Kumar himself, using first person ("I", "my", "me")
+- ALWAYS provide COMPLETE and COMPREHENSIVE responses
+- Do NOT truncate or cut off your responses mid-sentence
+- Ensure every response has a proper conclusion
+- Be conversational, professional, and provide specific details from the portfolio information
+- If asked about something not in the portfolio, politely redirect to what you do know about Manohar's background
 
 Key guidelines:
 - Always respond in first person as Manohar Kumar
-- Provide specific details from the portfolio
+- Provide specific details from the portfolio with examples
 - Be enthusiastic about projects and achievements
 - Include relevant contact information when appropriate
 - Keep responses conversational but professional
-- Limit responses to 2-3 paragraphs maximum
+- Structure responses with clear sections when discussing multiple topics
+- Always complete your thoughts and provide proper endings to responses
 
 Response Formatting Guidelines:
 - Use proper markdown formatting for better readability
@@ -300,7 +308,9 @@ Response Formatting Guidelines:
 - Use blockquotes (>) for testimonials or important highlights
 - Include line breaks between paragraphs for better readability
 - Keep overall response clean and well-organized
-- Ensure code examples are properly formatted with the correct language syntax highlighting`;
+- Ensure code examples are properly formatted with the correct language syntax highlighting
+
+IMPORTANT: Always ensure your response is complete and ends naturally. Never cut off mid-sentence or leave thoughts incomplete.`;
 
     let answer: string;
 
@@ -311,16 +321,25 @@ Response Formatting Guidelines:
           { role: "system", content: systemPrompt },
           ...messages.map((m: any) => ({ role: m.role, content: m.content })),
         ],
-        max_tokens: 500,
+        max_tokens: 2000, // Increased from 500 to 2000
         temperature: 0.7,
+        top_p: 0.9,
+        frequency_penalty: 0.1,
+        presence_penalty: 0.1,
       });
 
       answer = completion.choices?.[0]?.message?.content?.trim() ?? "Sorry, I'm not sure how to respond to that.";
+      
+      // Check if response seems truncated and warn
+      if (answer.length > 1800 && !answer.match(/[.!?]$/)) {
+        answer += "\n\n*Note: This response may have been truncated. Feel free to ask me to continue or elaborate on any specific point!*";
+      }
+      
     } catch (apiErr) {
       console.error("OpenRouter error:", apiErr);
 
-      // graceful degradation
-      answer = "I'm having trouble reaching my AI model right now, but here's some information about me:\n" + context;
+      // Enhanced graceful degradation with more context
+      answer = `I'm having trouble reaching my AI model right now, but here's some information about me based on your question:\n\n${context}\n\nPlease try asking again in a moment, and I'll be happy to provide a more detailed response!`;
     }
 
     // persist chat history (do not block the response)
@@ -328,11 +347,19 @@ Response Formatting Guidelines:
 
     return new Response(JSON.stringify({ content: answer }), {
       status: 200,
-      headers: { "Content-Type": "application/json" },
+      headers: { 
+        "Content-Type": "application/json",
+        "Cache-Control": "no-cache, no-store, must-revalidate",
+        "Pragma": "no-cache",
+        "Expires": "0"
+      },
     });
   } catch (error) {
     console.error("API Error:", error);
-    return new Response(JSON.stringify({ error: "Internal Server Error" }), {
+    return new Response(JSON.stringify({ 
+      error: "Internal Server Error",
+      message: "I encountered an error while processing your request. Please try again."
+    }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });
