@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from "react"
 import { ChatMessage } from "@/components/chat-message"
 import { SuggestionButtons } from "@/components/suggestion-buttons"
 import { TypingIndicator } from "@/components/typing-indicator"
+import { SplashCursor } from "@/components/ui/splash-cursor"
 import { ArrowUp, Sparkles } from "lucide-react"
 
 interface Message {
@@ -142,6 +143,17 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex flex-col items-center p-4 md:p-8">
+      {/* Interactive Splash Cursor Effect */}
+      <SplashCursor 
+        SPLAT_RADIUS={0.15}
+        SPLAT_FORCE={4000}
+        COLOR_UPDATE_SPEED={8}
+        DENSITY_DISSIPATION={2.0}
+        VELOCITY_DISSIPATION={1.5}
+        CURL={20}
+        PRESSURE={0.6}
+      />
+      
       <div className="w-full max-w-4xl flex flex-col items-center">
         {/* Header Section */}
         <header className="text-center mb-8 relative">
@@ -152,7 +164,7 @@ export default function Home() {
           {/* Main emoji with glow effect */}
           <div className="relative inline-block mb-6">
             <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur-xl opacity-30 animate-pulse"></div>
-            <span className="relative text-6xl md:text-7xl block animate-bounce">👋</span>
+            <span className="relative text-6xl md:text-7xl block animate-bounce cursor-pointer hover:scale-110 transition-transform duration-300">👋</span>
           </div>
           
           <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-gray-800 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
@@ -191,13 +203,13 @@ export default function Home() {
 
         {/* Input Section */}
         <form onSubmit={handleSubmit} className="w-full max-w-3xl relative mb-6">
-          <div className="relative bg-white rounded-full shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 focus-within:shadow-xl focus-within:border-blue-300">
+          <div className="relative bg-white/90 backdrop-blur-sm rounded-full shadow-lg border border-gray-200 hover:shadow-xl transition-all duration-300 focus-within:shadow-xl focus-within:border-blue-300">
             <textarea
               ref={textareaRef}
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Ask me about my experience, projects, skills, or anything else..."
-              className="w-full min-h-[60px] max-h-[120px] py-4 px-6 pr-16 bg-transparent rounded-full text-base resize-none focus:outline-none placeholder-gray-500 leading-relaxed"
+              className="w-full min-h-[60px] max-h-[120px] py-4 px-6 pr-16 bg-transparent rounded-full text-base resize-none focus:outline-none placeholder-gray-500 leading-relaxed relative z-10"
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault()
@@ -211,7 +223,7 @@ export default function Home() {
             <button
               type="submit"
               disabled={!input.trim() || isLoading}
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl disabled:shadow-none group"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed text-white rounded-full flex items-center justify-center transition-all duration-300 shadow-lg hover:shadow-xl disabled:shadow-none group hover:scale-105 active:scale-95 z-10"
             >
               <ArrowUp className="w-5 h-5 group-hover:scale-110 transition-transform duration-200" />
             </button>
@@ -223,7 +235,7 @@ export default function Home() {
         
         {/* Footer */}
         <footer className="mt-12 text-center text-gray-500 text-sm">
-          <p>Powered by AI • Built with ❤️ by Manohar Kumar</p>
+          <p className="relative z-10">Powered by AI • Built with ❤️ by Manohar Kumar</p>
         </footer>
       </div>
     </div>

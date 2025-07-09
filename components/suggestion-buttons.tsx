@@ -54,7 +54,7 @@ export function SuggestionButtons({ onSuggestionClick }: SuggestionButtonsProps)
           <button
             key={suggestion.label}
             onClick={() => onSuggestionClick(suggestion.text)}
-            className="group relative overflow-hidden px-6 py-3 bg-white border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:text-white transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95"
+            className="group relative overflow-hidden px-6 py-3 bg-white/90 backdrop-blur-sm border border-gray-200 rounded-full text-sm font-medium text-gray-700 hover:text-white transition-all duration-300 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95 z-10"
           >
             {/* Gradient background that appears on hover */}
             <div className={`absolute inset-0 bg-gradient-to-r ${suggestion.gradient} opacity-0 group-hover:opacity-100 transition-opacity duration-300`}></div>
