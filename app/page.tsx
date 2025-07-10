@@ -161,12 +161,6 @@ export default function Home() {
           <div className="absolute -top-4 -left-4 w-20 h-20 bg-blue-100 rounded-full opacity-60 animate-pulse"></div>
           <div className="absolute -top-2 -right-6 w-16 h-16 bg-purple-100 rounded-full opacity-40 animate-pulse delay-1000"></div>
           
-          {/* Main emoji with glow effect */}
-          <div className="relative inline-block mb-6">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 rounded-full blur-xl opacity-30 animate-pulse"></div>
-            <span className="relative text-6xl md:text-7xl block animate-bounce cursor-pointer hover:scale-110 transition-transform duration-300">👋</span>
-          </div>
-          
           <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-gray-800 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-4">
             Hey, I'm Manohar Kumar
           </h1>
