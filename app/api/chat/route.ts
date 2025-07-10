@@ -1,7 +1,7 @@
 // app/api/chat/route.ts
 
 import OpenAI from "openai";
-import { databaseManager, initializeDatabase } from "@/lib/database-manager";
+import { databaseManager } from "@/lib/database-manager";
 
 // Debug: Show loaded env variables (remove or mask in production)
 console.log("OpenRouter API Key:", process.env.OPENROUTER_API_KEY ? "Loaded" : "Missing");
@@ -215,7 +215,7 @@ export async function POST(req: Request) {
 
     // Initialize database with optimized error handling
     try {
-      await initializeDatabase();
+      await databaseManager.initializeTables();
     } catch (dbError) {
       console.error("Database initialization failed:", dbError);
       // Continue with request even if DB init fails
