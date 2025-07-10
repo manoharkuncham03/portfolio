@@ -1,14 +1,12 @@
 // app/api/chat/route.ts
 
 import OpenAI from "openai";
-import { createClient } from "@supabase/supabase-js";
+import { databaseManager, initializeDatabase } from "@/lib/database-manager";
 
 // Debug: Show loaded env variables (remove or mask in production)
 console.log("OpenRouter API Key:", process.env.OPENROUTER_API_KEY ? "Loaded" : "Missing");
 console.log("OpenRouter Model:", process.env.OPENROUTER_MODEL);
 console.log("OpenRouter Base URL:", process.env.OPENROUTER_BASE_URL);
-console.log("Supabase URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
-console.log("Supabase Service Role Key:", process.env.SUPABASE_SERVICE_ROLE_KEY ? "Loaded" : "Missing");
 
 // OpenRouter configuration
 const openai = new OpenAI({
@@ -19,12 +17,6 @@ const openai = new OpenAI({
     "X-Title": process.env.NEXT_PUBLIC_SITE_NAME || "Portfolio Site",
   },
 });
-
-// Supabase configuration
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
 
 export const maxDuration = 60; // Increased from 30 to 60 seconds
 
@@ -185,17 +177,22 @@ function searchRelevantContent(query: string) {
   return relevantSections.sort((a, b) => b.relevance - a.relevance).slice(0, 5); // Increased from 3 to 5
 }
 
-// Database initialization (idempotent)
+// Database initialization with optimized error handling
 async function initializeDatabase() {
   try {
-    // Create tables if they don't exist
-    const { error: tableError } = await supabase.rpc("create_portfolio_tables");
-    if (tableError) console.log("Tables may already exist:", tableError.message);
+    // Initialize database with proper error handling
+    const { success, errors } = await initializeDatabase();
+    
+    if (!success) {
+      console.error("Database initialization failed:", errors);
+      return;
+    }
 
-    // Check if data already exists
-    const { data: existingData } = await supabase.from("portfolio_content_simple").select("id").limit(1);
+    // Check if data already exists using optimized query
+    const existingData = await databaseManager.getPortfolioContent(undefined, true);
 
     if (!existingData || existingData.length === 0) {
+      console.log("Populating initial portfolio data...");
       const contentChunks = [
         {
           type: "personal",
@@ -229,42 +226,75 @@ async function initializeDatabase() {
         },
       ];
 
-      for (const chunk of contentChunks) {
-        await supabase.from("portfolio_content_simple").insert({
-          type: chunk.type,
-          content: chunk.content,
-          metadata: chunk.metadata,
-          keywords: chunk.keywords,
-        });
+      // Use batch insert for better performance
+      try {
+        const { error } = await databaseManager.supabase
+          .from("portfolio_content_simple")
+          .insert(contentChunks);
+        
+        if (error) {
+          console.error("Error inserting initial data:", error);
+        } else {
+          console.log("Initial portfolio data inserted successfully");
+        }
+      } catch (error) {
+        console.error("Error during batch insert:", error);
       }
+    } else {
+      console.log("Portfolio data already exists, skipping initialization");
     }
   } catch (error) {
     console.error("Database initialization error:", error);
   }
 }
 
-async function saveChatMessage(message: string, response: string, userId?: string) {
+// Optimized chat message saving with session management
+async function saveChatMessage(
+  message: string, 
+  response: string, 
+  sessionId: string = "anonymous",
+  metadata: any = {}
+): Promise<boolean> {
   try {
-    await supabase.from("chat_history").insert({
-      user_id: userId || "anonymous",
-      user_message: message,
-      bot_response: response,
-      timestamp: new Date().toISOString(),
-    });
+    // Initialize session if needed
+    await databaseManager.initializeSession(sessionId);
+    
+    // Store conversation with metadata
+    const success = await databaseManager.storeConversation(
+      sessionId,
+      message,
+      response,
+      metadata
+    );
+    
+    if (!success) {
+      console.error("Failed to store conversation");
+    }
+    
+    return success;
   } catch (error) {
     console.error("Error saving chat message:", error);
+    return false;
   }
 }
 
 export async function POST(req: Request) {
+  const startTime = Date.now();
+  
   try {
     const { messages } = await req.json();
 
-    // Initialize database on first request
-    await initializeDatabase();
+    // Initialize database with optimized error handling
+    try {
+      await initializeDatabase();
+    } catch (dbError) {
+      console.error("Database initialization failed:", dbError);
+      // Continue with request even if DB init fails
+    }
 
     const lastMessage = messages[messages.length - 1];
     const userQuery = lastMessage.content;
+    const sessionId = req.headers.get('x-session-id') || `session_${Date.now()}`;
 
     // Search for relevant content using keyword matching
     const relevantContent = searchRelevantContent(userQuery);
@@ -342,8 +372,14 @@ IMPORTANT: Always ensure your response is complete and ends naturally. Never cut
       answer = `I'm having trouble reaching my AI model right now, but here's some information about me based on your question:\n\n${context}\n\nPlease try asking again in a moment, and I'll be happy to provide a more detailed response!`;
     }
 
-    // persist chat history (do not block the response)
-    saveChatMessage(userQuery, answer).catch(console.error);
+    // Persist chat history with metadata (non-blocking)
+    const responseTime = Date.now() - startTime;
+    saveChatMessage(userQuery, answer, sessionId, {
+      responseTime,
+      model: process.env.OPENROUTER_MODEL,
+      relevantContentCount: relevantContent.length,
+      contextUsed: relevantContent.map(item => item.type)
+    }).catch(console.error);
 
     return new Response(JSON.stringify({ content: answer }), {
       status: 200,
@@ -351,7 +387,8 @@ IMPORTANT: Always ensure your response is complete and ends naturally. Never cut
         "Content-Type": "application/json",
         "Cache-Control": "no-cache, no-store, must-revalidate",
         "Pragma": "no-cache",
-        "Expires": "0"
+        "Expires": "0",
+        "X-Response-Time": `${responseTime}ms`
       },
     });
   } catch (error) {
