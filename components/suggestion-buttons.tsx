@@ -1,7 +1,7 @@
 "use client"
 
 import { Briefcase, Code, GraduationCap, Mail, Sparkles, User } from "lucide-react"
-import { LiquidButton } from "@/components/ui/liquid-glass-button"
+import { motion } from "framer-motion"
 
 interface SuggestionButtonsProps {
   onSuggestionClick: (text: string) => void
@@ -53,31 +53,111 @@ export function SuggestionButtons({ onSuggestionClick }: SuggestionButtonsProps)
     },
   ]
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1,
+        delayChildren: 0.2
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: 20,
+      scale: 0.8
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      scale: 1,
+      transition: {
+        type: "spring",
+        stiffness: 300,
+        damping: 20
+      }
+    }
+  }
+
   return (
-    <div className="flex flex-wrap justify-center gap-4 w-full max-w-4xl">
-      {suggestions.map((suggestion) => {
+    <motion.div 
+      className="flex flex-wrap justify-center gap-4 w-full max-w-4xl"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {suggestions.map((suggestion, index) => {
         const IconComponent = suggestion.icon
         return (
-          <LiquidButton
+          <motion.div
             key={suggestion.label}
-            onClick={() => onSuggestionClick(suggestion.text)}
-            size="lg"
-            className={`group relative overflow-hidden transition-all duration-300 z-10 ${suggestion.color} hover:text-white font-medium`}
+            variants={itemVariants}
+            whileHover={{ 
+              scale: 1.05,
+              transition: { type: "spring", stiffness: 400, damping: 10 }
+            }}
+            whileTap={{ 
+              scale: 0.95,
+              transition: { type: "spring", stiffness: 400, damping: 10 }
+            }}
+            className="relative group"
           >
-            {/* Gradient background overlay that appears on hover */}
-            <div className={`absolute inset-0 bg-gradient-to-r ${suggestion.gradient} opacity-0 group-hover:opacity-90 transition-all duration-300 rounded-md z-0`}></div>
-            
-            {/* Content with proper z-index */}
-            <div className="relative flex items-center space-x-2 z-10">
-              <IconComponent className="w-5 h-5 transition-all duration-300 group-hover:scale-110 group-hover:text-white" />
-              <span className="whitespace-nowrap transition-colors duration-300 group-hover:text-white">{suggestion.label}</span>
-            </div>
-            
-            {/* Enhanced shine effect */}
-            <div className="absolute inset-0 -top-2 -left-2 w-6 h-full bg-white opacity-30 transform rotate-12 translate-x-[-100%] group-hover:translate-x-[300%] transition-transform duration-700 z-20"></div>
-          </LiquidButton>
+            <motion.button
+              onClick={() => onSuggestionClick(suggestion.text)}
+              className={`
+                relative overflow-hidden
+                w-24 h-24 
+                border-4 border-white
+                bg-white/90 backdrop-blur-sm
+                transition-all duration-300
+                ${suggestion.color} hover:text-white
+                font-medium text-sm
+                shadow-lg hover:shadow-xl
+                group
+              `}
+              style={{ borderRadius: 0 }}
+              whileHover={{
+                boxShadow: "0 20px 40px rgba(0,0,0,0.1)",
+              }}
+            >
+              {/* Gradient background overlay that appears on hover */}
+              <motion.div 
+                className={`absolute inset-0 bg-gradient-to-br ${suggestion.gradient} opacity-0 group-hover:opacity-100`}
+                initial={{ opacity: 0 }}
+                whileHover={{ opacity: 1 }}
+                transition={{ duration: 0.3 }}
+              />
+              
+              {/* Content */}
+              <div className="relative flex flex-col items-center justify-center h-full space-y-1 z-10">
+                <motion.div
+                  whileHover={{ 
+                    scale: 1.2,
+                    rotate: 5,
+                    transition: { type: "spring", stiffness: 300, damping: 10 }
+                  }}
+                >
+                  <IconComponent className="w-6 h-6 transition-all duration-300 group-hover:text-white" />
+                </motion.div>
+                <span className="text-xs leading-tight text-center transition-colors duration-300 group-hover:text-white px-1">
+                  {suggestion.label}
+                </span>
+              </div>
+              
+              {/* Enhanced shine effect */}
+              <motion.div 
+                className="absolute inset-0 w-6 h-full bg-white opacity-30 transform rotate-12 translate-x-[-100%] group-hover:translate-x-[300%] transition-transform duration-700 z-20"
+                initial={{ x: "-100%" }}
+                whileHover={{ x: "300%" }}
+                transition={{ duration: 0.7, ease: "easeInOut" }}
+              />
+            </motion.button>
+          </motion.div>
         )
       })}
-    </div>
+    </motion.div>
   )
 }

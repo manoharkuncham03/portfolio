@@ -8,6 +8,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import { Copy, Check, Bot, User } from 'lucide-react'
 import { useTheme } from 'next-themes'
+import { motion } from 'framer-motion'
 
 interface Message {
   id: string
@@ -35,9 +36,19 @@ export function ChatMessage({ message }: ChatMessageProps) {
   }
 
   return (
-    <div className={`mb-6 flex gap-4 ${message.sender === "user" ? "flex-row-reverse" : "flex-row"}`}>
+    <motion.div 
+      className={`mb-6 flex gap-4 ${message.sender === "user" ? "flex-row-reverse" : "flex-row"}`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       {/* Avatar */}
-      <div className="flex-shrink-0">
+      <motion.div 
+        className="flex-shrink-0"
+        initial={{ scale: 0 }}
+        animate={{ scale: 1 }}
+        transition={{ delay: 0.1, type: "spring", stiffness: 300 }}
+      >
         <div className={`w-10 h-10 rounded-full flex items-center justify-center shadow-lg ${
           message.sender === "user" 
             ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white" 
@@ -49,7 +60,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
             <Bot className="w-5 h-5" />
           )}
         </div>
-      </div>
+      </motion.div>
 
       {/* Message Content */}
       <div className={`flex flex-col max-w-[80%] md:max-w-[85%] ${
@@ -190,6 +201,6 @@ export function ChatMessage({ message }: ChatMessageProps) {
           {message.timestamp}
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

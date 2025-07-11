@@ -5,6 +5,7 @@ import { useState, useRef, useEffect } from "react"
 import { ChatMessage } from "@/components/chat-message"
 import { SuggestionButtons } from "@/components/suggestion-buttons"
 import { TypingIndicator } from "@/components/typing-indicator"
+import { ProjectsGrid } from "@/components/projects-grid"
 import { SplashCursor } from "@/components/ui/splash-cursor"
 import { ArrowUp, Sparkles } from "lucide-react"
 
@@ -165,10 +166,6 @@ export default function Home() {
             Hey, I'm Manohar Kumar
           </h1>
           
-          <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto leading-relaxed">
-            AI Developer & Frontend Engineer passionate about creating intelligent solutions
-          </p>
-          
           {/* Sparkle decorations */}
           <div className="absolute top-1/2 left-1/4 transform -translate-x-1/2 -translate-y-1/2">
             <Sparkles className="w-6 h-6 text-yellow-400 animate-pulse" />
@@ -227,9 +224,17 @@ export default function Home() {
         {/* Suggestion Buttons */}
         <SuggestionButtons onSuggestionClick={handleSuggestionClick} />
         
+        {/* Projects Section */}
+        {!isChatVisible && (
+          <div className="mt-16 w-full">
+            <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">Featured Projects</h2>
+            <ProjectsGrid />
+          </div>
+        )}
+        
         {/* Footer */}
-        <footer className="mt-12 text-center text-gray-500 text-sm">
-          <p className="relative z-10">Powered by AI • Built with ❤️ by Manohar Kumar</p>
+        <footer className="mt-12 text-center text-gray-500 text-sm relative z-10">
+          <p>© 2024 Manohar Kumar. All rights reserved.</p>
         </footer>
       </div>
     </div>
