@@ -2,6 +2,134 @@
 @tailwind components;
 @tailwind utilities;
 
+/* CSS Variables for Dark Mode Theming */
+:root {
+  /* Light mode colors */
+  --background: 255 255 255;
+  --foreground: 15 23 42;
+  --card: 255 255 255;
+  --card-foreground: 15 23 42;
+  --popover: 255 255 255;
+  --popover-foreground: 15 23 42;
+  --primary: 59 130 246;
+  --primary-foreground: 255 255 255;
+  --secondary: 241 245 249;
+  --secondary-foreground: 15 23 42;
+  --muted: 241 245 249;
+  --muted-foreground: 100 116 139;
+  --accent: 241 245 249;
+  --accent-foreground: 15 23 42;
+  --destructive: 239 68 68;
+  --destructive-foreground: 255 255 255;
+  --border: 226 232 240;
+  --input: 226 232 240;
+  --ring: 59 130 246;
+  --radius: 0.5rem;
+  
+  /* Custom theme colors */
+  --suggestion-bg: 255 255 255;
+  --suggestion-text: 59 130 246;
+  --suggestion-border: 255 255 255;
+  --suggestion-hover-bg: 59 130 246;
+  --suggestion-hover-text: 255 255 255;
+  --gradient-from: 239 246 255;
+  --gradient-via: 255 255 255;
+  --gradient-to: 245 243 255;
+}
+
+.dark {
+  /* Dark mode colors */
+  --background: 2 6 23;
+  --foreground: 248 250 252;
+  --card: 15 23 42;
+  --card-foreground: 248 250 252;
+  --popover: 15 23 42;
+  --popover-foreground: 248 250 252;
+  --primary: 99 102 241;
+  --primary-foreground: 248 250 252;
+  --secondary: 30 41 59;
+  --secondary-foreground: 248 250 252;
+  --muted: 30 41 59;
+  --muted-foreground: 148 163 184;
+  --accent: 30 41 59;
+  --accent-foreground: 248 250 252;
+  --destructive: 220 38 38;
+  --destructive-foreground: 248 250 252;
+  --border: 51 65 85;
+  --input: 51 65 85;
+  --ring: 99 102 241;
+  
+  /* Custom dark theme colors */
+  --suggestion-bg: 30 41 59;
+  --suggestion-text: 99 102 241;
+  --suggestion-border: 51 65 85;
+  --suggestion-hover-bg: 99 102 241;
+  --suggestion-hover-text: 248 250 252;
+  --gradient-from: 15 23 42;
+  --gradient-via: 30 41 59;
+  --gradient-to: 51 65 85;
+}
+
+/* Smooth theme transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 200ms;
+}
+
+/* Respect system preference */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --background: 2 6 23;
+    --foreground: 248 250 252;
+    --card: 15 23 42;
+    --card-foreground: 248 250 252;
+    --popover: 15 23 42;
+    --popover-foreground: 248 250 252;
+    --primary: 99 102 241;
+    --primary-foreground: 248 250 252;
+    --secondary: 30 41 59;
+    --secondary-foreground: 248 250 252;
+    --muted: 30 41 59;
+    --muted-foreground: 148 163 184;
+    --accent: 30 41 59;
+    --accent-foreground: 248 250 252;
+    --destructive: 220 38 38;
+    --destructive-foreground: 248 250 252;
+    --border: 51 65 85;
+    --input: 51 65 85;
+    --ring: 99 102 241;
+    
+    --suggestion-bg: 30 41 59;
+    --suggestion-text: 99 102 241;
+    --suggestion-border: 51 65 85;
+    --suggestion-hover-bg: 99 102 241;
+    --suggestion-hover-text: 248 250 252;
+    --gradient-from: 15 23 42;
+    --gradient-via: 30 41 59;
+    --gradient-to: 51 65 85;
+  }
+}
+
+/* Ensure proper contrast ratios */
+@media (prefers-contrast: high) {
+  :root {
+    --border: 0 0 0;
+    --input: 0 0 0;
+  }
+  
+  .dark {
+    --border: 255 255 255;
+    --input: 255 255 255;
+  }
+}
+
+/* Base styles with CSS variables */
+body {
+  background-color: rgb(var(--background));
+  color: rgb(var(--foreground));
+}
+
 /* Custom scrollbar for chat container */
 .scroll-smooth::-webkit-scrollbar {
   width: 6px;
